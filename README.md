@@ -1,4 +1,4 @@
-# QueryGPT
+# QueryGPT - RAG based SQL AI Assistant
 
 ## Introduction
 
