@@ -6,26 +6,28 @@ It uses **Retrieval-Augmented Generation (RAG)** to retrieve relevant database s
 
 ## Key Features
 
-- **Natural language to SQL:** Ask questions in plain English instead of manually writing MySQL queries.
-- **RAG-based schema retrieval:** Retrieves relevant database documentation from Pinecone before generating SQL.
-- **Automated schema discovery:** Discovers database tables and extracts their `CREATE TABLE` definitions.
-- **Duplicate-resistant schema refresh:** Clears the existing Pinecone namespace before re-indexing to avoid accumulating stale or duplicate schema vectors during a full sync.
-- **Metadata-enriched documents:** Attaches table-level metadata to improve document identification and retrieval context.
-- **Database overview indexing:** Stores database-level information separately, enabling direct answers to questions such as how many tables exist and which tables are available.
-- **Read-oriented query validation:** Checks generated queries against an allowlist-style pattern before execution.
-- **Structured result formatting:** Converts raw SQL output into a consistent representation with rows, columns, and row count.
-- **Conversational result summaries:** Explains query results in natural language rather than exposing only raw database output.
-- **Fallback conversational agent:** Handles greetings, rejected requests, and cases where the system cannot answer confidently from the available context.
-- **Multiple chat interfaces:** Supports the n8n chat interface and a React frontend through an HTTP webhook.
-- **Consistent API response:** Returns the answer, request type, and generated SQL in a predictable JSON structure.
+- **RAG-based Schema Retrieval:** Retrieves relevant table schemas from Pinecone to provide context for SQL generation.
+- **Automated Schema Indexing:** Extracts MySQL table definitions using `SHOW CREATE TABLE` and indexes them in Pinecone.
+- **Schema Refresh:** Clears existing vectors before re-indexing to prevent stale or duplicate schema records.
+- **Metadata Enrichment:** Adds table-level metadata to schema documents to improve retrieval and identification.
+- **Database Overview Indexing:** Stores database-level metadata separately to answer questions about available tables and database structure.
+- **SQL Validation:** Checks generated queries against an allowlist of permitted SQL statement patterns before execution.
+- **Natural Language Summarization:** Converts SQL query results into plain-English explanations.
+- **Fallback Agent:** Handles greetings, invalid requests, and queries that cannot be answered using the retrieved context.
+- **Dual Chat Interfaces:** Supports the n8n chat interface and a React frontend through an HTTP webhook.
+- **Structured API Response:** Returns the answer, request type, and generated SQL in a consistent JSON format.
 
 ## Screenshots
 
 ### Chat Interface
+See it live - https://querygpt.netlify.app/
 ![QueryGPT Chat Interface](./screenshots/chat-interface.png)
+![QueryGPT Chat Interface](./screenshots/chat-interface2.png)
 
 ### n8n Workflow
+AI agent workflow
 ![QueryGPT n8n Workflow](./screenshots/workflow-agent.png)
+DB Schema Upload workflow
 ![QueryGPT n8n Workflow](./screenshots/workflow-upload.png)
 
 ## Example Interaction
@@ -48,27 +50,9 @@ The webhook returns a JSON response with three fields: answer, requestType, and 
 | Frontend | React |
 | API integration | n8n Webhook |
 
-## Setup and Usage
-
-1. Configure the MySQL connection in n8n.
-2. Configure the Pinecone index and credentials.
-3. Configure Ollama and download the `nomic-embed-text` embedding model.
-4. Configure the OpenRouter chat model credentials.
-5. Run the schema indexing workflow to populate Pinecone with table schemas and the database overview.
-6. Start the query workflow and test questions through the n8n chat interface.
-7. Configure the webhook URL and allowed frontend origin to connect the React application.
-8. Re-run schema indexing after structural database changes.
 
 ## Safety and Limitations
 
 QueryGPT is designed for read-oriented database access, and its workflow checks generated SQL before execution. For stronger protection, use a dedicated MySQL account with read-only permissions and apply query timeouts and result limits.
 
 The current validator uses a pattern-based check rather than a full SQL parser, so it should not be treated as a complete SQL security boundary. The assistant's answers also depend on the accuracy of the indexed schema and the context retrieved from Pinecone.
-
-## Future Improvements
-
-Potential enhancements include stronger SQL parsing, query timeouts and row limits, more granular retrieval filters, improved error tracking, and automated schema synchronization.
-
----
-
-QueryGPT brings database discovery, semantic schema retrieval, SQL generation, validation, execution, and conversational responses together in one workflow-driven application.
