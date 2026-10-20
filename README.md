@@ -1,90 +1,74 @@
-# QueryGPT - RAG based SQL AI Assistant
+# QueryGPT - Natural Language to SQL Assistant
 
-## Introduction
+QueryGPT is an AI-powered assistant that lets users ask questions about a MySQL database in natural language and receive meaningful answers without writing SQL manually.
 
-Built QueryGPT, a fully local AI assistant that lets users query a MySQL database in plain English instead of writing SQL. It understands the database schema through a vector store, generates safe read-only SQL queries, executes them, and explains the results in a conversational, easy-to-understand format.
-
-**Tools:** Ollama (Qwen3:4B), n8n, MySQL, Pinecone Vector Store, Nomic Embed
-
-## Description
-
-The project uses a two-workflow architecture. The first workflow automatically indexes database schemas by extracting `CREATE TABLE` statements, generating semantic embeddings with Nomic Embed, and storing them in Pinecone Vector Store.
-
-The second workflow retrieves the relevant schemas for a user's question, generates optimized read-only MySQL queries using retrieved schemas, validates query safety, executes the SQL and summarizes them in natural language.
+It uses **Retrieval-Augmented Generation (RAG)** to retrieve relevant database schemas from Pinecone, generate SQL queries, validate them before execution, and summarize query results in plain English. Users can interact with it through the n8n chat interface or a React frontend connected through a webhook.
 
 ## Key Features
 
-1. Natural language to SQL conversion using a local Ollama-powered AI agent.
-2. RAG using Pinecone Vector Store for semantic schema retrieval.
-3. Automatically indexes MySQL table schemas using `SHOW CREATE TABLE` for semantic retrieval.
-4. Validates every query to ensure only safe, read-only SQL is executed (`SELECT`, `SHOW`, `DESCRIBE`).
-5. Formats raw SQL results into clean, conversational responses that are easy to understand.
-6. Has a fallback conversational agent for generic non-SQL related questions.
+- **Natural language to SQL:** Ask questions in plain English instead of manually writing MySQL queries.
+- **RAG-based schema retrieval:** Retrieves relevant database documentation from Pinecone before generating SQL.
+- **Automated schema discovery:** Discovers database tables and extracts their `CREATE TABLE` definitions.
+- **Duplicate-resistant schema refresh:** Clears the existing Pinecone namespace before re-indexing to avoid accumulating stale or duplicate schema vectors during a full sync.
+- **Metadata-enriched documents:** Attaches table-level metadata to improve document identification and retrieval context.
+- **Database overview indexing:** Stores database-level information separately, enabling direct answers to questions such as how many tables exist and which tables are available.
+- **Read-oriented query validation:** Checks generated queries against an allowlist-style pattern before execution.
+- **Structured result formatting:** Converts raw SQL output into a consistent representation with rows, columns, and row count.
+- **Conversational result summaries:** Explains query results in natural language rather than exposing only raw database output.
+- **Fallback conversational agent:** Handles greetings, rejected requests, and cases where the system cannot answer confidently from the available context.
+- **Multiple chat interfaces:** Supports the n8n chat interface and a React frontend through an HTTP webhook.
+- **Consistent API response:** Returns the answer, request type, and generated SQL in a predictable JSON structure.
 
-![QueryGPT Workflow](/assets/image1.png)
+## Screenshots
 
-![QueryGPT Agent](/assets/image2.png)
+### Chat Interface
+![QueryGPT Chat Interface](./screenshots/chat-interface.png)
 
-## 1. Upload Schemas Workflow
+### n8n Workflow
+![QueryGPT n8n Workflow](./screenshots/workflow-agent.png)
+![QueryGPT n8n Workflow](./screenshots/workflow-upload.png)
 
-1. Retrieves schemas (`SHOW CREATE TABLE`) for every table in the connected MySQL database.
-2. Generates embeddings using Nomic Embed through Ollama.
-3. Stores embeddings and metadata inside Pinecone Vector Store.
+## Example Interaction
+User: Which customers have placed the most orders?
 
-## 2. QueryGPT Agent Workflow
+QueryGPT converts the question into SQL, validates and runs it on MySQL, then explains the results in simple English.
+Frontend API Response
+The webhook returns a JSON response with three fields: answer, requestType, and sql.
 
-1. Accepts natural language database questions through an n8n chat trigger.
-2. Retrieves the most relevant table schemas from Pinecone using semantic search.
-3. Generates a schema-aware MySQL query using Qwen3 LLM.
-4. Validates that the query is read-only and executable before running it.
-5. Executes the query and formats the results into a consistent structure.
-6. Produces a concise, human-readable summary of the query output.
+## Technology Stack
 
-## Technical Architecture
+| Component | Technology |
+|---|---|
+| Workflow orchestration | n8n |
+| Database | MySQL |
+| Vector database | Pinecone |
+| Embedding model | Ollama — `nomic-embed-text` |
+| Chat model | OpenRouter |
+| Retrieval approach | Retrieval-Augmented Generation (RAG) |
+| Frontend | React |
+| API integration | n8n Webhook |
 
-### Schema Indexing Pipeline
+## Setup and Usage
 
-```text
-MySQL Database
-      │
-      ▼
-Extract schemas using SHOW CREATE TABLE
-      │
-      ▼
-Nomic Embed (Ollama)
-      │
-      ▼
-Pinecone Vector Store
-```
+1. Configure the MySQL connection in n8n.
+2. Configure the Pinecone index and credentials.
+3. Configure Ollama and download the `nomic-embed-text` embedding model.
+4. Configure the OpenRouter chat model credentials.
+5. Run the schema indexing workflow to populate Pinecone with table schemas and the database overview.
+6. Start the query workflow and test questions through the n8n chat interface.
+7. Configure the webhook URL and allowed frontend origin to connect the React application.
+8. Re-run schema indexing after structural database changes.
 
-### Query Pipeline
+## Safety and Limitations
 
-```text
-User Query
-      │
-      ▼
-Pinecone Schema Retrieval
-      │
-      ▼
-Qwen3 SQL Generator
-      │
-      ▼
-SQL Validation
-      │
-      ▼
-Execute MySQL Query
-      │
-      ▼
-Result Formatter
-      │
-      ▼
-AI Result Summarizer
-```
+QueryGPT is designed for read-oriented database access, and its workflow checks generated SQL before execution. For stronger protection, use a dedicated MySQL account with read-only permissions and apply query timeouts and result limits.
 
-## Use Cases
+The current validator uses a pattern-based check rather than a full SQL parser, so it should not be treated as a complete SQL security boundary. The assistant's answers also depend on the accuracy of the indexed schema and the context retrieved from Pinecone.
 
-* SQL assistant for non-technical users - Ask questions in plain English without knowing SQL syntax.
-* Business analytics on demand - Quickly fetch customer, sales, product, or order insights using conversational queries.
-* Database exploration - Discover tables, columns, and relationships without manually browsing the schema.
-* Developer productivity - Save time writing and validating SQL by letting the AI generate optimized read-only queries.
-* Safe database querying - Interact with production or enterprise databases without risking accidental data modification.
+## Future Improvements
+
+Potential enhancements include stronger SQL parsing, query timeouts and row limits, more granular retrieval filters, improved error tracking, and automated schema synchronization.
+
+---
+
+QueryGPT brings database discovery, semantic schema retrieval, SQL generation, validation, execution, and conversational responses together in one workflow-driven application.
