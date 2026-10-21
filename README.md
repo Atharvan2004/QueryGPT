@@ -55,4 +55,6 @@ The webhook returns a JSON response with three fields: answer, requestType, and 
 
 QueryGPT is designed for read-oriented database access, and its workflow checks generated SQL before execution. For stronger protection, use a dedicated MySQL account with read-only permissions and apply query timeouts and result limits.
 
+*The frontend requires n8n to be running locally to be able to generate responses.*
+
 The current validator uses a pattern-based check rather than a full SQL parser, so it should not be treated as a complete SQL security boundary. The assistant's answers also depend on the accuracy of the indexed schema and the context retrieved from Pinecone.
