@@ -2,7 +2,9 @@
 
 QueryGPT is an AI-powered assistant that lets users ask questions about a MySQL database in natural language and receive meaningful answers without writing SQL manually.
 
-It uses **Retrieval-Augmented Generation (RAG)** to retrieve relevant database schemas from Pinecone, generate SQL queries, validate them before execution, and summarize query results in plain English. Users can interact with it through the n8n chat interface or a React frontend connected through a webhook.
+It uses **Retrieval-Augmented Generation (RAG)** to retrieve relevant database schemas from Pinecone, generate SQL queries, validate them before execution, and summarize query results in plain English. Users can interact with it through the n8n chat interface or a React frontend connected through a webhook. 
+
+Benchmarked performance across **30 test scenarios** spanning 7 query-complexity domains, achieving **90% strict accuracy** and a **91.7% weighted score.**
 
 ## Key Features
 
@@ -49,6 +51,40 @@ The webhook returns a JSON response with three fields: answer, requestType, and 
 | Retrieval approach | Retrieval-Augmented Generation (RAG) |
 | Frontend | React |
 | API integration | n8n Webhook |
+
+## QueryGPT Evaluation Scorecard
+
+### Overall Results
+
+| Metric | Value |
+|---|---:|
+| Total Test Cases | 30 |
+| Correct | 27 |
+| Partially Correct | 1 |
+| Incorrect | 2 |
+| Evaluated Tests | 30 |
+| **Strict Accuracy** | **90.0%** |
+| **Weighted Score** | **91.7%** |
+
+### Scoring Methodology
+
+| Metric | Formula |
+|---|---|
+| Strict Accuracy | Correct / Evaluated Tests |
+| Weighted Score | (Correct + 0.5 × Partially Correct) / Evaluated Tests |
+
+### Evaluation by Category
+
+| Category | Total Tests | Evaluated |
+|---|---:|---:|
+| Core retrieval, filters & sorting | 7 | 7 |
+| Aggregations & ranking | 4 | 4 |
+| Joins & relationships | 3 | 3 |
+| Date & time queries | 2 | 2 |
+| Schema & database knowledge | 3 | 3 |
+| Ambiguity, unsupported requests & fallback | 5 | 5 |
+| Safety, error handling & API contract | 6 | 6 |
+| **Total** | **30** | **30** |
 
 
 ## Safety and Limitations
